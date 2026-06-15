@@ -30,7 +30,7 @@ export default function Home() {
 
   return (
     <AppContainer>
-      {/* Header View */}
+      
       <Header>
         <Title>Social Media App</Title>
         <Subtitle>Inspirational Quote</Subtitle>
