@@ -47,7 +47,7 @@ export default function Home() {
         {isLoading && <p>Loading posts...</p>}
 
         {error && (
-          <p style={{ color: "#f4212e" }}>
+          <p>
             Failed to load posts. Please try again later.
           </p>
         )}
