@@ -52,40 +52,31 @@ export default function Home() {
           </p>
         )}
 
-        {!isLoading && !error && posts?.length === 0 && (
-          <p>No posts yet. Be the first to share your thoughts!</p>
-        )}
-
-        {!isLoading &&
-          !error &&
-          posts?.map((post) => {
-            const displayDate = post.createdAt
-              ? new Date(post.createdAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
+        {!isLoading && !error && (
+  <>
+    {posts?.length === 0 && (
+      <p>No posts yet. Be the first to share your thoughts!</p>
+    )}
+    {posts?.map((post) => (
+      <PostCard key={post._id}>
+        <PostText>{post.text}</PostText>
+        <CardFooter>
+          <ButtonGroup>
+            <TextLink>Edit</TextLink>
+            <TextLink $danger>Delete</TextLink>
+          </ButtonGroup>
+          <Timestamp>
+            {post.createdAt
+              ? formatDistanceToNow(new Date(post.createdAt), {
+                  addSuffix: true,
                 })
-              : "Just now";
-
-            return (
-              <PostCard key={post._id}>
-                <PostText>{post.text}</PostText>
-
-                <CardFooter>
-                  <ButtonGroup>
-                    <TextLink>Edit</TextLink>
-                    <TextLink $danger>Delete</TextLink>
-                  </ButtonGroup>
-                  <Timestamp>
-                    {post.createdAt
-                      ? formatDistanceToNow(new Date(post.createdAt), {
-                          addSuffix: true,
-                        })
-                      : "Just now"}
-                  </Timestamp>
-                </CardFooter>
-              </PostCard>
-            );
-          })}
+              : "Just now"}
+          </Timestamp>
+        </CardFooter>
+      </PostCard>
+    ))}
+  </>
+)}
       </FeedContainer>
     </AppContainer>
   );
