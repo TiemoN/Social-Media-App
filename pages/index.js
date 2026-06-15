@@ -33,7 +33,7 @@ export default function Home() {
       {/* Header View */}
       <Header>
         <Title>Social Media App</Title>
-        <Subtitle>"Inspirational Quote"</Subtitle>
+        <Subtitle>Inspirational Quote</Subtitle>
       </Header>
 
       <CreatePostBox>
