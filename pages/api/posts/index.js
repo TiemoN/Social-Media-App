@@ -25,7 +25,7 @@ export default async function handler(request, response) {
       
       return response.status(201).json({ status: "Post created successfully" });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return response.status(400).json({ error: error.message });
     }
   }
