@@ -1,6 +1,6 @@
-import { useState } from "react";
-import useSWR from "swr";
-import { formatDistanceToNow } from "date-fns";
+import { useState } from 'react';
+import useSWR from 'swr';
+import { formatDistanceToNow } from 'date-fns';
 import {
   AppContainer,
   Header,
