@@ -168,3 +168,8 @@ export const FlexActionRow = styled(ActionRow)`
   justify-content: space-between;
   align-items: center;
 `;
+
+export const EditedLabel = styled.span`
+  color: #536471;
+  margin-right: 4px;
+`;
