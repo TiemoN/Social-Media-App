@@ -32,11 +32,6 @@ export default function Home() {
   const [submitError, setSubmitError] = useState("");
   const [hasMounted, setHasMounted] = useState(false);
 
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  if (!hasMounted) return null;
 
   async function handlePostSubmit() {
     if (!inputText.trim()) return;
@@ -115,10 +110,13 @@ export default function Home() {
                     <TextLink $danger>Delete</TextLink>
                   </ButtonGroup>
                   <Timestamp>
-                    {post.createdAt
-                      ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
-                      : "Just now"}
-                  </Timestamp>
+ 
+  {isEdited && <EditedLabel>(Edited)</EditedLabel>}
+  
+  {post.createdAt
+    ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
+    : "Just now"}
+</Timestamp>
                 </CardFooter>
               </PostCard>
             ))}
