@@ -152,3 +152,24 @@ export const Timestamp = styled.span`
   font-size: 13px;
   color: #536471;
 `;
+
+export const ErrorMessage = styled.p`
+  color: #f4212e;
+  font-size: 14px;
+  margin-bottom: 8px;
+`;
+
+export const CharacterCounter = styled.span`
+  font-size: 13px;
+  color: ${props => props.$error ? '#f4212e' : '#536471'};
+`;
+
+export const FlexActionRow = styled(ActionRow)`
+  justify-content: space-between;
+  align-items: center;
+`;
+
+export const EditedLabel = styled.span`
+  color: #536471;
+  margin-right: 4px;
+`;
