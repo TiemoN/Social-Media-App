@@ -30,7 +30,6 @@ export default function Home() {
   
   const [inputText, setInputText] = useState("");
   const [submitError, setSubmitError] = useState("");
-  const [hasMounted, setHasMounted] = useState(false);
 
 
   async function handlePostSubmit() {
