@@ -78,6 +78,7 @@ export default function Home() {
         <TextArea 
           placeholder="What's happening?" 
           rows="3" 
+          maxLength={280}
           value={inputText}
           onChange={(event) => setInputText(event.target.value)}
         />
