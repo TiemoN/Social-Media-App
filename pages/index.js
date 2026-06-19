@@ -1,24 +1,12 @@
-import { formatDistanceToNow } from "date-fns";
-import useSWR from "swr";
-import { useState,useEffect } from "react";
-
+import { useState } from 'react';
+import useSWR from 'swr';
+import { formatDistanceToNow } from 'date-fns';
 import {
-  AppContainer,
-  Header,
-  Title,
-  Subtitle,
-  CreatePostBox,
-  TextArea,
-  EditedLabel,
-  Button,
-  FeedContainer,
-  PostCard,
-  PostText,
-  CardFooter,
-  ButtonGroup,
-  TextLink,
-  Timestamp,ErrorMessage, CharacterCounter, FlexActionRow 
-} from "../components/FeedElements";
+  AppContainer, Header, Title, Subtitle, CreatePostBox, TextArea, 
+  Button, FeedContainer, PostCard, PostText, CardFooter, 
+  ButtonGroup, TextLink, Timestamp, ErrorMessage, CharacterCounter, 
+  FlexActionRow, EditTextarea, EditActions, EditedLabel
+} from '../components/FeedElements';
 
 const fetcher = (url) => fetch(url).then((res) => {
   if (!res.ok) throw new Error('Failed to fetch data');
@@ -31,31 +19,56 @@ export default function Home() {
   const [inputText, setInputText] = useState("");
   const [submitError, setSubmitError] = useState("");
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [editingId, setEditingId] = useState(null);
+  const [editingText, setEditingText] = useState("");
+  const [editError, setEditError] = useState("");
 
   async function handlePostSubmit() {
-    if (!inputText.trim()) return;
+   if (!inputText.trim() || isSubmitting) return; 
     setSubmitError("");
+    setIsSubmitting(true); 
 
     try {
       const response = await fetch("/api/posts", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: inputText }),
       });
-
-      if (!response.ok) throw new Error('Server rejected submission');
-
+      
+      if (!response.ok) throw new Error('Server error');
+      
       mutate();       
       setInputText(""); 
     } catch (err) {
       setSubmitError("Failed to send post. Please check your network and try again.");
+    } finally {
+      setIsSubmitting(false); 
     }
   }
 
-  const isButtonDisabled = !inputText.trim() || inputText.length > 280;
-  const isOverLimit = inputText.length > 280;
+   const isButtonDisabled = !inputText.trim() || isSubmitting;
+  async function handleEditSubmit(id) {
+    if (!editingText.trim()) return;
+    setEditError("");
+
+    try {
+      const response = await fetch(`/api/posts/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: editingText }),
+      });
+
+      if (!response.ok) throw new Error('Failed to save update');
+
+      mutate();
+      setEditingId(null);
+      setEditingText("");
+    } catch (err) {
+      setEditError("Failed to save changes. Please try again.");
+    }
+  }
 
   return (
     <AppContainer>
@@ -64,27 +77,26 @@ export default function Home() {
         <Subtitle>Insert inspirational quote</Subtitle>
       </Header>
 
-      
+
       <CreatePostBox>
-        
         {submitError && <ErrorMessage>{submitError}</ErrorMessage>}
         
         <TextArea 
           placeholder="What's happening?" 
           rows="3" 
-          maxLength={280}
+          maxLength={280} 
           value={inputText}
           onChange={(event) => setInputText(event.target.value)}
+          disabled={isSubmitting}
         />
         
-        
         <FlexActionRow>
-         
-          <CharacterCounter $error={isOverLimit}>
+      
+          <CharacterCounter>
             {280 - inputText.length}
           </CharacterCounter>
-          <Button onClick={handlePostSubmit} disabled={isButtonDisabled}>
-            Post
+           <Button onClick={handlePostSubmit} disabled={isButtonDisabled}>
+            {isSubmitting ? "Posting..." : "Post"}
           </Button>
         </FlexActionRow>
       </CreatePostBox>
@@ -100,25 +112,56 @@ export default function Home() {
               <p>No posts yet. Be the first to share your thoughts!</p>
             )}
 
-            {posts?.map((post) => (
-              <PostCard key={post._id}>
-                <PostText>{post.text}</PostText>
-                <CardFooter>
-                  <ButtonGroup>
-                    <TextLink>Edit</TextLink>
-                    <TextLink $danger>Delete</TextLink>
-                  </ButtonGroup>
-                  <Timestamp>
- 
-  {isEdited && <EditedLabel>(Edited)</EditedLabel>}
-  
-  {post.createdAt
-    ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
-    : "Just now"}
-</Timestamp>
-                </CardFooter>
-              </PostCard>
-            ))}
+            {posts?.map((post) => {
+              const isEditingThisPost = editingId === post._id;
+              const isEdited = post.createdAt !== post.updatedAt;
+
+              return (
+                <PostCard key={post._id}>
+                  {isEditingThisPost ? (
+                   
+                    <div>
+                      {editError && <ErrorMessage>{editError}</ErrorMessage>}
+                      <EditTextarea 
+                        rows="2"
+                        maxLength={280}
+                        value={editingText}
+                        onChange={(event) => setEditingText(event.target.value)}
+                      />
+                      <EditActions>
+                        <Button $secondary onClick={() => setEditingId(null)}>Cancel</Button>
+                        <Button onClick={() => handleEditSubmit(post._id)} disabled={!editingText.trim()}>
+                          Save
+                        </Button>
+                      </EditActions>
+                    </div>
+                  ) : (
+                   
+                    <>
+                      <PostText>{post.text}</PostText>
+                      <CardFooter>
+                        <ButtonGroup>
+                          <TextLink onClick={() => {
+                            setEditingId(post._id);
+                            setEditingText(post.text);
+                            setEditError("");
+                          }}>
+                            Edit
+                          </TextLink>
+                          
+                        </ButtonGroup>
+                        <Timestamp>
+                          {isEdited && <EditedLabel>(Edited)</EditedLabel>}
+                          {post.createdAt
+                            ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
+                            : "Just now"}
+                        </Timestamp>
+                      </CardFooter>
+                    </>
+                  )}
+                </PostCard>
+              );
+            })}
           </>
         )}
       </FeedContainer>
