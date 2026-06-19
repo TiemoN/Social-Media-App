@@ -19,28 +19,36 @@ export default function Home() {
   const [inputText, setInputText] = useState("");
   const [submitError, setSubmitError] = useState("");
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
   const [editError, setEditError] = useState("");
 
   async function handlePostSubmit() {
-    if (!inputText.trim()) return;
+   if (!inputText.trim() || isSubmitting) return; 
     setSubmitError("");
+    setIsSubmitting(true); 
+
     try {
       const response = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: inputText }),
       });
+      
       if (!response.ok) throw new Error('Server error');
+      
       mutate();       
       setInputText(""); 
     } catch (err) {
       setSubmitError("Failed to send post. Please check your network and try again.");
+    } finally {
+      setIsSubmitting(false); 
     }
   }
 
-  const isButtonDisabled = !inputText.trim();
+   const isButtonDisabled = !inputText.trim() || isSubmitting;
   async function handleEditSubmit(id) {
     if (!editingText.trim()) return;
     setEditError("");
@@ -79,6 +87,7 @@ export default function Home() {
           maxLength={280} 
           value={inputText}
           onChange={(event) => setInputText(event.target.value)}
+          disabled={isSubmitting}
         />
         
         <FlexActionRow>
@@ -86,8 +95,8 @@ export default function Home() {
           <CharacterCounter>
             {280 - inputText.length}
           </CharacterCounter>
-          <Button onClick={handlePostSubmit} disabled={isButtonDisabled}>
-            Post
+           <Button onClick={handlePostSubmit} disabled={isButtonDisabled}>
+            {isSubmitting ? "Posting..." : "Post"}
           </Button>
         </FlexActionRow>
       </CreatePostBox>
@@ -139,7 +148,7 @@ export default function Home() {
                           }}>
                             Edit
                           </TextLink>
-                          <TextLink $danger>Delete</TextLink>
+                          
                         </ButtonGroup>
                         <Timestamp>
                           {isEdited && <EditedLabel>(Edited)</EditedLabel>}
