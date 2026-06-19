@@ -9,7 +9,7 @@ import {
   Subtitle,
   CreatePostBox,
   TextArea,
-  
+  EditedLabel,
   Button,
   FeedContainer,
   PostCard,
