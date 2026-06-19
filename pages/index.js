@@ -87,7 +87,7 @@ export default function Home() {
         <FlexActionRow>
          
           <CharacterCounter $error={isOverLimit}>
-            {inputText.length} / 280
+            {280 - inputText.length}
           </CharacterCounter>
           <Button onClick={handlePostSubmit} disabled={isButtonDisabled}>
             Post
