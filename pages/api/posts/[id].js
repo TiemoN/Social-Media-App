@@ -23,6 +23,20 @@ export default async function handler(request, response) {
       return response.status(400).json({ error: error.message });
     }
   }
+   if (request.method === "DELETE") {
+    try {
+      const deletedPost = await Post.findByIdAndDelete(id);
+      
+      if (!deletedPost) {
+        return response.status(404).json({ error: "Post not found in database." });
+      }
+      
+      return response.status(200).json({ status: `Post ${id} successfully deleted.` });
+    } catch (error) {
+      return response.status(400).json({ error: error.message });
+    }
+  }
 
   return response.status(405).json({ message: "Method not allowed" });
 }
+
