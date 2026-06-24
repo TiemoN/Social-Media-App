@@ -253,6 +253,7 @@ export default function Home() {
                             <LikeButton 
                               onClick={() => handleLikeToggle(post._id)}
                               $hasLiked={hasLikedThisPost}
+                              aria-label={hasLikedThisPost ? "Unlike post" : "Like post"}
                             >
                               {hasLikedThisPost ? "❤️" : "🖤"} {likeCount}
                             </LikeButton>
