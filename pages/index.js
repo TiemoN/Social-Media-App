@@ -53,11 +53,11 @@ export default function Home() {
 
   const [userId, setUserId] = useState(null);
 
-  // Initialize unique user tracking ID on client mount
+ 
   useEffect(() => {
     let localId = localStorage.getItem("anonymous_user_id");
     if (!localId) {
-      localId = crypto.randomUUID(); // Generates a completely secure, random ID string
+      localId = crypto.randomUUID(); 
       localStorage.setItem("anonymous_user_id", localId);
     }
     setUserId(localId);
