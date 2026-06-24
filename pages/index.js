@@ -23,7 +23,8 @@ import {
   EditActions,
   EditedLabel,
   InteractionContainer,
-   LikeButton
+   LikeButton,
+    UploadButton, HiddenFileInput, PreviewContainer, PreviewText, PostImage,UploadWrapper
 } from "../components/FeedElements";
 
 const fetcher = (url) =>
@@ -53,6 +54,10 @@ export default function Home() {
 
   const [userId, setUserId] = useState(null);
 
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreviewName, setImagePreviewName] = useState("");
+  const [uploadError, setUploadError] = useState("");
+
  
   useEffect(() => {
     let localId = localStorage.getItem("anonymous_user_id");
@@ -63,22 +68,64 @@ export default function Home() {
     setUserId(localId);
   }, []);
 
+    const handleFileChange = (event) => {
+    setUploadError("");
+    const file = event.target.files[0];
+    if (!file) return;
+
+   
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("File is too large. Maximum size allowed is 5MB.");
+      return;
+    }
+
+    setImageFile(file);
+    setImagePreviewName(file.name);
+  };
+
+   const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreviewName("");
+    setUploadError("");
+  };
+
   async function handlePostSubmit() {
     if (!inputText.trim() || isSubmitting) return;
     setSubmitError("");
     setIsSubmitting(true);
 
+    let imageUrl = "";
+
     try {
+       if (imageFile) {
+        const formData = new FormData();
+        formData.append("file", imageFile);
+        formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+
+        const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error("Cloudinary media upload failed.");
+        
+        const data = await res.json();
+        imageUrl = data.secure_url; 
+      }
+
+      
       const response = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: inputText }),
+        body: JSON.stringify({ text: inputText, image: imageUrl }),
       });
 
       if (!response.ok) throw new Error("Server error");
 
       mutate();
       setInputText("");
+      handleRemoveImage();
     } catch (err) {
       setSubmitError(
         "Failed to send post. Please check your network and try again."
@@ -170,9 +217,24 @@ export default function Home() {
           onChange={(event) => setInputText(event.target.value)}
           disabled={isSubmitting}
         />
+         {imagePreviewName && (
+          <PreviewContainer>
+            <PreviewText>📎 {imagePreviewName}</PreviewText>
+            <TextLink $danger onClick={handleRemoveImage} disabled={isSubmitting}>Remove</TextLink>
+          </PreviewContainer>
+        )}
 
         <FlexActionRow>
-          <CharacterCounter>{280 - inputText.length}</CharacterCounter>
+          <UploadWrapper>
+        <UploadButton htmlFor="file-upload">+</UploadButton>
+      <HiddenFileInput 
+        id="file-upload" 
+        type="file" 
+        accept="image/*" 
+        onChange={handleFileChange} 
+      />
+          <CharacterCounter>{280 - inputText.length}/280</CharacterCounter>
+          </UploadWrapper>
           <Button onClick={handlePostSubmit} disabled={isButtonDisabled}>
             {isSubmitting ? "Posting..." : "Post"}
           </Button>
@@ -232,6 +294,9 @@ export default function Home() {
                   ) : (
                     <>
                       <PostText>{post.text}</PostText>
+                       {post.image && (
+                        <PostImage src={post.image} alt="Uploaded post media attachment content" />
+                      )}
                       <CardFooter>
                         <ButtonGroup>
                           <TextLink
@@ -253,6 +318,7 @@ export default function Home() {
                             <LikeButton 
                               onClick={() => handleLikeToggle(post._id)}
                               $hasLiked={hasLikedThisPost}
+                              
                             >
                               {hasLikedThisPost ? "❤️" : "🖤"} {likeCount}
                             </LikeButton>

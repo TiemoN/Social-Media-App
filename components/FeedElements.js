@@ -192,3 +192,60 @@ export const LikeButton = styled(TextLink)`
     text-decoration: none;
   }
 `;
+
+export const UploadButton = styled.label`
+  background-color: #efefef;
+  color: #0f1419;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background-color: #e2e2e2;
+  }
+`;
+
+export const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+export const PreviewContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f7f9f9;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+`;
+
+export const PreviewText = styled.span`
+  font-size: 13px;
+  color: #536471;
+  max-width: 80%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+export const PostImage = styled.img`
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-top: 8px;
+  border: 1px solid #eff3f4;
+`;
+
+export const UploadWrapper = styled.div`
+ display: 'flex';
+  align-Items: 'center';
+  gap: '12px';
+`;

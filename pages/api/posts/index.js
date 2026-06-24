@@ -17,18 +17,18 @@ export default async function handler(request, response) {
  
   if (request.method === "POST") {
     try {
-      const postData = request.body; 
-      
-      
-      await Post.create(postData); 
-      
-      
-      return response.status(201).json({ status: "Post created successfully" });
+      const { text, image } = request.body; 
+
+      if (!text || text.trim().length === 0) {
+        return response.status(400).json({ error: "Post text cannot be empty." });
+      }
+
+     
+      const newPost = await Post.create({ text, image }); 
+      return response.status(201).json(newPost);
     } catch (error) {
-      console.error(error);
-      return response.status(400).json({ error: error.message });
+      return response.status(500).json({ error: "Failed to save post to database." });
     }
   }
-
   return response.status(405).json({ message: "Method not allowed" });
 }
