@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useSWR from "swr";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -22,6 +22,8 @@ import {
   EditTextarea,
   EditActions,
   EditedLabel,
+  InteractionContainer,
+   LikeButton
 } from "../components/FeedElements";
 
 const fetcher = (url) =>
@@ -48,6 +50,18 @@ export default function Home() {
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
   const [editError, setEditError] = useState("");
+
+  const [userId, setUserId] = useState(null);
+
+  // Initialize unique user tracking ID on client mount
+  useEffect(() => {
+    let localId = localStorage.getItem("anonymous_user_id");
+    if (!localId) {
+      localId = crypto.randomUUID(); // Generates a completely secure, random ID string
+      localStorage.setItem("anonymous_user_id", localId);
+    }
+    setUserId(localId);
+  }, []);
 
   async function handlePostSubmit() {
     if (!inputText.trim() || isSubmitting) return;
@@ -94,6 +108,24 @@ export default function Home() {
       setEditingText("");
     } catch (err) {
       setEditError("Failed to save changes. Please try again.");
+    }
+  }
+
+   async function handleLikeToggle(postId) {
+    if (!userId) return;
+
+    try {
+      const response = await fetch(`/api/posts/${postId}/like`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (response.ok) {
+        mutate(); 
+      }
+    } catch (err) {
+      console.error("Failed to toggle like engagement:", err);
     }
   }
 
@@ -165,6 +197,9 @@ export default function Home() {
               const isEditingThisPost = editingId === post._id;
               const isEdited = post.createdAt !== post.updatedAt;
               const hasDeleteError = deleteErrorId === post._id;
+               const hasLikedThisPost = post.likes?.includes(userId);
+              const likeCount = post.likes?.length || 0;
+
 
               return (
                 <PostCard key={post._id}>
@@ -214,6 +249,14 @@ export default function Home() {
                           >
                             Delete
                           </TextLink>
+                          <InteractionContainer>
+                            <LikeButton 
+                              onClick={() => handleLikeToggle(post._id)}
+                              $hasLiked={hasLikedThisPost}
+                            >
+                              {hasLikedThisPost ? "❤️" : "🖤"} {likeCount}
+                            </LikeButton>
+                          </InteractionContainer>
                         </ButtonGroup>
                         <Timestamp>
                           {isEdited && <EditedLabel>(Edited)</EditedLabel>}

@@ -173,3 +173,22 @@ export const EditedLabel = styled.span`
   color: #536471;
   margin-right: 4px;
 `;
+
+export const InteractionContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+export const LikeButton = styled(TextLink)`
+  color: ${props => props.$hasLiked ? '#f91880' : '#536471'};
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  
+  &:hover {
+    color: #f91880;
+    text-decoration: none;
+  }
+`;
