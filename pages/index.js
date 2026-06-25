@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import useSWR from 'swr';
-import { formatDistanceToNow } from 'date-fns';
+import { useState, useEffect } from "react";
+import useSWR from "swr";
+import { formatDistanceToNow } from "date-fns";
 import {
   AppContainer,
   Header,
@@ -22,6 +22,9 @@ import {
   EditTextarea,
   EditActions,
   EditedLabel,
+  InteractionContainer,
+   LikeButton,
+    UploadButton, HiddenFileInput, PreviewContainer, PreviewText, PostImage,UploadWrapper
 } from "../components/FeedElements";
 
 const fetcher = (url) =>
@@ -49,22 +52,80 @@ export default function Home() {
   const [editingText, setEditingText] = useState("");
   const [editError, setEditError] = useState("");
 
+  const [userId, setUserId] = useState(null);
+
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreviewName, setImagePreviewName] = useState("");
+  const [uploadError, setUploadError] = useState("");
+
+ 
+  useEffect(() => {
+    let localId = localStorage.getItem("anonymous_user_id");
+    if (!localId) {
+      localId = crypto.randomUUID(); 
+      localStorage.setItem("anonymous_user_id", localId);
+    }
+    setUserId(localId);
+  }, []);
+
+    const handleFileChange = (event) => {
+    setUploadError("");
+    const file = event.target.files[0];
+    if (!file) return;
+
+   
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("File is too large. Maximum size allowed is 5MB.");
+      return;
+    }
+
+    setImageFile(file);
+    setImagePreviewName(file.name);
+  };
+
+   const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreviewName("");
+    setUploadError("");
+  };
+
   async function handlePostSubmit() {
     if (!inputText.trim() || isSubmitting) return;
     setSubmitError("");
     setIsSubmitting(true);
 
+    let imageUrl = "";
+
     try {
+       if (imageFile) {
+        const formData = new FormData();
+        formData.append("file", imageFile);
+        formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+
+        const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error("Cloudinary media upload failed.");
+        
+        const data = await res.json();
+        imageUrl = data.secure_url; 
+      }
+
+      
       const response = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: inputText }),
+        body: JSON.stringify({ text: inputText, image: imageUrl }),
       });
 
       if (!response.ok) throw new Error("Server error");
 
       mutate();
       setInputText("");
+      handleRemoveImage();
     } catch (err) {
       setSubmitError(
         "Failed to send post. Please check your network and try again."
@@ -94,6 +155,24 @@ export default function Home() {
       setEditingText("");
     } catch (err) {
       setEditError("Failed to save changes. Please try again.");
+    }
+  }
+
+   async function handleLikeToggle(postId) {
+    if (!userId) return;
+
+    try {
+      const response = await fetch(`/api/posts/${postId}/like`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (response.ok) {
+        mutate(); 
+      }
+    } catch (err) {
+      console.error("Failed to toggle like engagement:", err);
     }
   }
 
@@ -138,9 +217,24 @@ export default function Home() {
           onChange={(event) => setInputText(event.target.value)}
           disabled={isSubmitting}
         />
+         {imagePreviewName && (
+          <PreviewContainer>
+            <PreviewText>📎 {imagePreviewName}</PreviewText>
+            <TextLink $danger onClick={handleRemoveImage} disabled={isSubmitting}>Remove</TextLink>
+          </PreviewContainer>
+        )}
 
         <FlexActionRow>
-          <CharacterCounter>{280 - inputText.length}</CharacterCounter>
+          <UploadWrapper>
+        <UploadButton htmlFor="file-upload">+</UploadButton>
+      <HiddenFileInput 
+        id="file-upload" 
+        type="file" 
+        accept="image/*" 
+        onChange={handleFileChange} 
+      />
+          <CharacterCounter>{280 - inputText.length}/280</CharacterCounter>
+          </UploadWrapper>
           <Button onClick={handlePostSubmit} disabled={isButtonDisabled}>
             {isSubmitting ? "Posting..." : "Post"}
           </Button>
@@ -165,6 +259,9 @@ export default function Home() {
               const isEditingThisPost = editingId === post._id;
               const isEdited = post.createdAt !== post.updatedAt;
               const hasDeleteError = deleteErrorId === post._id;
+               const hasLikedThisPost = post.likes?.includes(userId);
+              const likeCount = post.likes?.length || 0;
+
 
               return (
                 <PostCard key={post._id}>
@@ -197,6 +294,9 @@ export default function Home() {
                   ) : (
                     <>
                       <PostText>{post.text}</PostText>
+                       {post.image && (
+                        <PostImage src={post.image} alt="Uploaded post media attachment content" />
+                      )}
                       <CardFooter>
                         <ButtonGroup>
                           <TextLink
@@ -214,6 +314,15 @@ export default function Home() {
                           >
                             Delete
                           </TextLink>
+                          <InteractionContainer>
+                            <LikeButton 
+                              onClick={() => handleLikeToggle(post._id)}
+                              $hasLiked={hasLikedThisPost}
+                              
+                            >
+                              {hasLikedThisPost ? "❤️" : "🖤"} {likeCount}
+                            </LikeButton>
+                          </InteractionContainer>
                         </ButtonGroup>
                         <Timestamp>
                           {isEdited && <EditedLabel>(Edited)</EditedLabel>}
