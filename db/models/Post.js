@@ -7,20 +7,26 @@ const PostSchema = new mongoose.Schema(
       required: [true, "Please provide content for your post."],
       maxlength: [280, "Post cannot be more than 280 characters."],
     },
-     likes: {
+    likes: {
       type: [String],
       default: [],
-  },
-   image: {
+    },
+    image: {
       type: String,
       default: "",
     },
+    userEmail: {
+      type: String,
+      default: "",
+    },
+    userImage: { type: String, default: "" },
+
+    userName: { type: String, default: "" },
   },
 
   {
     timestamps: true,
   }
-
 );
-
+mongoose.models = {};
 export default mongoose.models.Post || mongoose.model("Post", PostSchema);
