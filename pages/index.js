@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import useSWR from "swr";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { formatDistanceToNow } from "date-fns";
 import {
   AppContainer,
@@ -23,8 +24,21 @@ import {
   EditActions,
   EditedLabel,
   InteractionContainer,
-   LikeButton,
-    UploadButton, HiddenFileInput, PreviewContainer, PreviewText, PostImage,UploadWrapper
+  LikeButton,
+  UploadButton,
+  HiddenFileInput,
+  PreviewContainer,
+  PreviewText,
+  PostImage,
+  UploadWrapper,
+  NavBar,
+  UserProfileZone,
+  Avatar,
+  UsernameText,
+  GuestNotice,
+  PostHeaderZone,
+  PostAvatar,
+  PostAuthorName,
 } from "../components/FeedElements";
 
 const fetcher = (url) =>
@@ -34,6 +48,8 @@ const fetcher = (url) =>
   });
 
 export default function Home() {
+  const { data: session, status } = useSession();
+
   const {
     data: posts,
     error,
@@ -58,22 +74,20 @@ export default function Home() {
   const [imagePreviewName, setImagePreviewName] = useState("");
   const [uploadError, setUploadError] = useState("");
 
- 
   useEffect(() => {
     let localId = localStorage.getItem("anonymous_user_id");
     if (!localId) {
-      localId = crypto.randomUUID(); 
+      localId = crypto.randomUUID();
       localStorage.setItem("anonymous_user_id", localId);
     }
     setUserId(localId);
   }, []);
 
-    const handleFileChange = (event) => {
+  const handleFileChange = (event) => {
     setUploadError("");
     const file = event.target.files[0];
     if (!file) return;
 
-   
     if (file.size > 5 * 1024 * 1024) {
       setUploadError("File is too large. Maximum size allowed is 5MB.");
       return;
@@ -83,7 +97,7 @@ export default function Home() {
     setImagePreviewName(file.name);
   };
 
-   const handleRemoveImage = () => {
+  const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreviewName("");
     setUploadError("");
@@ -97,24 +111,30 @@ export default function Home() {
     let imageUrl = "";
 
     try {
-       if (imageFile) {
+      if (imageFile) {
         const formData = new FormData();
         formData.append("file", imageFile);
-        formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+        formData.append(
+          "upload_preset",
+          process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+        );
 
-        const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`, {
-          method: "POST",
-          body: formData,
-        });
+        const cloudinaryCloudName =
+          process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const res = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
         if (!res.ok) throw new Error("Cloudinary media upload failed.");
-        
+
         const data = await res.json();
-        imageUrl = data.secure_url; 
+        imageUrl = data.secure_url;
       }
 
-      
       const response = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -158,7 +178,7 @@ export default function Home() {
     }
   }
 
-   async function handleLikeToggle(postId) {
+  async function handleLikeToggle(postId) {
     if (!userId) return;
 
     try {
@@ -169,7 +189,7 @@ export default function Home() {
       });
 
       if (response.ok) {
-        mutate(); 
+        mutate();
       }
     } catch (err) {
       console.error("Failed to toggle like engagement:", err);
@@ -177,69 +197,99 @@ export default function Home() {
   }
 
   async function handleDelete(id) {
-  setDeleteErrorId(null);
-  
-  const confirmDelete = window.confirm("Are you sure you want to delete this post permanently?");
-  if (!confirmDelete) return;
+    setDeleteErrorId(null);
 
-  try {
-    
-    const response = await fetch(`/api/posts/${id}`, {
-      method: "DELETE",
-    });
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this post permanently?"
+    );
+    if (!confirmDelete) return;
 
-    if (!response.ok) {
-      throw new Error("Deletion failed on the backend.");
+    try {
+      const response = await fetch(`/api/posts/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Deletion failed on the backend.");
+      }
+
+      mutate();
+    } catch (err) {
+      console.error("Deletion error captured:", err);
+      setDeleteErrorId(id);
     }
-
-    
-    mutate();
-  } catch (err) {
-    console.error("Deletion error captured:", err);
-    setDeleteErrorId(id);
   }
-}
   return (
     <AppContainer>
+      <NavBar>
+        {status === "authenticated" ? (
+          <>
+            <UserProfileZone>
+              <Avatar src={session.user.image} alt={session.user.name} />
+              <UsernameText>{session.user.name}</UsernameText>
+            </UserProfileZone>
+            <Button $secondary onClick={() => signOut()}>
+              Sign Out
+            </Button>
+          </>
+        ) : (
+          <>
+            <UsernameText>Welcome Guest</UsernameText>
+
+            <Button onClick={() => signIn("github")}>
+              Sign In with GitHub
+            </Button>
+          </>
+        )}
+      </NavBar>
       <Header>
         <Title>Social Media App</Title>
         <Subtitle>Insert inspirational quote</Subtitle>
       </Header>
+      {status === "authenticated" ? (
+        <CreatePostBox>
+          {submitError && <ErrorMessage>{submitError}</ErrorMessage>}
 
-      <CreatePostBox>
-        {submitError && <ErrorMessage>{submitError}</ErrorMessage>}
+          <TextArea
+            placeholder="What's happening?"
+            rows="3"
+            maxLength={280}
+            value={inputText}
+            onChange={(event) => setInputText(event.target.value)}
+            disabled={isSubmitting}
+          />
+          {imagePreviewName && (
+            <PreviewContainer>
+              <PreviewText>📎 {imagePreviewName}</PreviewText>
+              <TextLink
+                $danger
+                onClick={handleRemoveImage}
+                disabled={isSubmitting}
+              >
+                Remove
+              </TextLink>
+            </PreviewContainer>
+          )}
 
-        <TextArea
-          placeholder="What's happening?"
-          rows="3"
-          maxLength={280}
-          value={inputText}
-          onChange={(event) => setInputText(event.target.value)}
-          disabled={isSubmitting}
-        />
-         {imagePreviewName && (
-          <PreviewContainer>
-            <PreviewText>📎 {imagePreviewName}</PreviewText>
-            <TextLink $danger onClick={handleRemoveImage} disabled={isSubmitting}>Remove</TextLink>
-          </PreviewContainer>
-        )}
-
-        <FlexActionRow>
-          <UploadWrapper>
-        <UploadButton htmlFor="file-upload">+</UploadButton>
-      <HiddenFileInput 
-        id="file-upload" 
-        type="file" 
-        accept="image/*" 
-        onChange={handleFileChange} 
-      />
-          <CharacterCounter>{280 - inputText.length}/280</CharacterCounter>
-          </UploadWrapper>
-          <Button onClick={handlePostSubmit} disabled={isButtonDisabled}>
-            {isSubmitting ? "Posting..." : "Post"}
-          </Button>
-        </FlexActionRow>
-      </CreatePostBox>
+          <FlexActionRow>
+            <UploadWrapper>
+              <UploadButton htmlFor="file-upload">+</UploadButton>
+              <HiddenFileInput
+                id="file-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <CharacterCounter>{280 - inputText.length}/280</CharacterCounter>
+            </UploadWrapper>
+            <Button onClick={handlePostSubmit} disabled={isButtonDisabled}>
+              {isSubmitting ? "Posting..." : "Post"}
+            </Button>
+          </FlexActionRow>
+        </CreatePostBox>
+      ) : (
+        <GuestNotice>Please sign in above to write a post.</GuestNotice>
+      )}
 
       <FeedContainer>
         {isLoading && <p>Loading posts...</p>}
@@ -259,9 +309,9 @@ export default function Home() {
               const isEditingThisPost = editingId === post._id;
               const isEdited = post.createdAt !== post.updatedAt;
               const hasDeleteError = deleteErrorId === post._id;
-               const hasLikedThisPost = post.likes?.includes(userId);
+              const hasLikedThisPost = post.likes?.includes(userId);
               const likeCount = post.likes?.length || 0;
-
+              const isPostOwner = post.isOwner;
 
               return (
                 <PostCard key={post._id}>
@@ -293,32 +343,52 @@ export default function Home() {
                     </div>
                   ) : (
                     <>
+                      {post.userImage && (
+                        <PostHeaderZone>
+                          <PostAvatar
+                            src={post.userImage}
+                            alt={post.userName ? `${post.userName}'s avatar` : "Author's avatar"}
+                          />
+                          {post.userName && (
+                            <PostAuthorName>{post.userName}</PostAuthorName>
+                          )}
+                        </PostHeaderZone>
+                      )}
+
                       <PostText>{post.text}</PostText>
-                       {post.image && (
-                        <PostImage src={post.image} alt="Uploaded post media attachment content" />
+
+                      {post.image && (
+                        <PostImage
+                          src={post.image}
+                          alt="Uploaded post media attachment content"
+                        />
                       )}
                       <CardFooter>
                         <ButtonGroup>
-                          <TextLink
-                            onClick={() => {
-                              setEditingId(post._id);
-                              setEditingText(post.text);
-                              setEditError("");
-                            }}
-                          >
-                            Edit
-                          </TextLink>
-                          <TextLink
-                            $danger
-                            onClick={() => handleDelete(post._id)}
-                          >
-                            Delete
-                          </TextLink>
+                          {isPostOwner && (
+                            <TextLink
+                              onClick={() => {
+                                setEditingId(post._id);
+                                setEditingText(post.text);
+                                setEditError("");
+                              }}
+                            >
+                              Edit
+                            </TextLink>
+                          )}
+
+                          {isPostOwner && (
+                            <TextLink
+                              $danger
+                              onClick={() => handleDelete(post._id)}
+                            >
+                              Delete
+                            </TextLink>
+                          )}
                           <InteractionContainer>
-                            <LikeButton 
+                            <LikeButton
                               onClick={() => handleLikeToggle(post._id)}
                               $hasLiked={hasLikedThisPost}
-                              
                             >
                               {hasLikedThisPost ? "❤️" : "🖤"} {likeCount}
                             </LikeButton>

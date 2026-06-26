@@ -161,7 +161,7 @@ export const ErrorMessage = styled.p`
 
 export const CharacterCounter = styled.span`
   font-size: 13px;
-  color: ${props => props.$error ? '#f4212e' : '#536471'};
+  color: ${(props) => (props.$error ? "#f4212e" : "#536471")};
 `;
 
 export const FlexActionRow = styled(ActionRow)`
@@ -181,12 +181,12 @@ export const InteractionContainer = styled.div`
 `;
 
 export const LikeButton = styled(TextLink)`
-  color: ${props => props.$hasLiked ? '#f91880' : '#536471'};
+  color: ${(props) => (props.$hasLiked ? "#f91880" : "#536471")};
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 14px;
-  
+
   &:hover {
     color: #f91880;
     text-decoration: none;
@@ -245,7 +245,62 @@ export const PostImage = styled.img`
 `;
 
 export const UploadWrapper = styled.div`
- display: 'flex';
-  align-Items: 'center';
-  gap: '12px';
+  display: "flex";
+  align-items: "center";
+  gap: "12px";
+`;
+
+export const GuestNotice = styled.p`
+  text-align: center;
+  color: #536471;
+  margin: 24px 0;
+  font-size: 14px;
+`;
+
+export const NavBar = styled.nav`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eff3f4;
+  margin-bottom: 24px;
+`;
+
+export const UserProfileZone = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const Avatar = styled.img`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #efefef;
+`;
+
+export const UsernameText = styled.span`
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f1419;
+`;
+
+export const PostHeaderZone = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+export const PostAvatar = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #efefef;
+`;
+
+export const PostAuthorName = styled.span`
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f1419;
 `;
