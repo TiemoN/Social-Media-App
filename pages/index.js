@@ -294,6 +294,7 @@ export default function Home() {
           step="0.05"
           value={volume}
           onChange={handleVolumeChange}
+          aria-label="Volume"
         />
       </AudioControlBar>
       <Header>
