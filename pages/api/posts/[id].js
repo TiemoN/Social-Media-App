@@ -35,7 +35,7 @@ export default async function handler(request, response) {
           .json({ error: "Post text cannot be empty." });
       }
 
-      await Post.findByIdAndUpdate(id, postData);
+      await Post.findByIdAndUpdate(id, { text: postData.text });
       return response.status(200).json({ status: `Post ${id} updated!` });
     } catch (error) {
       return response.status(400).json({ error: error.message });

@@ -347,7 +347,7 @@ export default function Home() {
                         <PostHeaderZone>
                           <PostAvatar
                             src={post.userImage}
-                            alt="Post author profile image layout"
+                            alt={post.userName ? `${post.userName}'s avatar` : "Author's avatar"}
                           />
                           {post.userName && (
                             <PostAuthorName>{post.userName}</PostAuthorName>
