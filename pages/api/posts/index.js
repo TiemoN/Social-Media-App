@@ -20,7 +20,7 @@ export default async function handler(request, response) {
           isOwner: isOwner,
         };
       });
-      return response.status(200).json(posts);
+      return response.status(200).json(safePosts);
     } catch (error) {
       return response.status(500).json({ error: "Failed to fetch posts" });
     }

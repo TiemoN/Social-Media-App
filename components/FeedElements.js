@@ -304,3 +304,24 @@ export const PostAuthorName = styled.span`
   font-weight: 700;
   color: #0f1419;
 `;
+
+export const AudioControlBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #f7f9f9;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  margin-bottom: 16px;
+`;
+
+export const PlayAudioButton = styled(Button)`
+  padding: 6px 12px;
+  font-size: 13px;
+`;
+
+export const VolumeSlider = styled.input`
+  cursor: pointer;
+  accent-color: #1d9bf0;
+  width: 80px;
+`;

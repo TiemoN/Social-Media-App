@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { formatDistanceToNow } from "date-fns";
@@ -39,6 +39,9 @@ import {
   PostHeaderZone,
   PostAvatar,
   PostAuthorName,
+  AudioControlBar,
+  PlayAudioButton,
+  VolumeSlider,
 } from "../components/FeedElements";
 
 const fetcher = (url) =>
@@ -74,6 +77,22 @@ export default function Home() {
   const [imagePreviewName, setImagePreviewName] = useState("");
   const [uploadError, setUploadError] = useState("");
 
+  const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(0.5);
+
+  useEffect(() => {
+    const audio = new Audio("/ambient.mp3");
+    audio.loop = true;
+    audio.volume = volume;
+    audioRef.current = audio;
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, []);
+
   useEffect(() => {
     let localId = localStorage.getItem("anonymous_user_id");
     if (!localId) {
@@ -82,6 +101,28 @@ export default function Home() {
     }
     setUserId(localId);
   }, []);
+
+  const handleTogglePlay = () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current
+  .play()
+  .then(() => setIsPlaying(true))
+  .catch((err) => console.error("Playback blocked:", err));
+    }
+  };
+
+  const handleVolumeChange = (event) => {
+    const newVolume = parseFloat(event.target.value);
+    setVolume(newVolume);
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume;
+    }
+  };
 
   const handleFileChange = (event) => {
     setUploadError("");
@@ -242,6 +283,20 @@ export default function Home() {
           </>
         )}
       </NavBar>
+      <AudioControlBar>
+        <PlayAudioButton $secondary onClick={handleTogglePlay}>
+          {isPlaying ? "⏸️ Pause Sound" : "▶️ Ambient Sound"}
+        </PlayAudioButton>
+        <VolumeSlider
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={volume}
+          onChange={handleVolumeChange}
+          aria-label="Volume"
+        />
+      </AudioControlBar>
       <Header>
         <Title>Social Media App</Title>
         <Subtitle>Insert inspirational quote</Subtitle>
@@ -347,7 +402,11 @@ export default function Home() {
                         <PostHeaderZone>
                           <PostAvatar
                             src={post.userImage}
-                            alt={post.userName ? `${post.userName}'s avatar` : "Author's avatar"}
+                            alt={
+                              post.userName
+                                ? `${post.userName}'s avatar`
+                                : "Author's avatar"
+                            }
                           />
                           {post.userName && (
                             <PostAuthorName>{post.userName}</PostAuthorName>
