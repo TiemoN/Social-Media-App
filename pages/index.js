@@ -110,9 +110,9 @@ export default function Home() {
       setIsPlaying(false);
     } else {
       audioRef.current
-        .play()
-        .catch((err) => console.log("Playback blocked:", err));
-      setIsPlaying(true);
+  .play()
+  .then(() => setIsPlaying(true))
+  .catch((err) => console.error("Playback blocked:", err));
     }
   };
 
