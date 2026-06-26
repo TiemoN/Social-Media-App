@@ -311,8 +311,7 @@ export default function Home() {
               const hasDeleteError = deleteErrorId === post._id;
               const hasLikedThisPost = post.likes?.includes(userId);
               const likeCount = post.likes?.length || 0;
-              const isPostOwner =
-                session && session.user?.email === post.userEmail;
+              const isPostOwner = post.isOwner;
 
               return (
                 <PostCard key={post._id}>

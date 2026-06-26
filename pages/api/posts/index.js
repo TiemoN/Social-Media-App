@@ -8,7 +8,18 @@ export default async function handler(request, response) {
 
   if (request.method === "GET") {
     try {
-      const posts = await Post.find().sort({ createdAt: -1 });
+      const session = await getServerSession(request, response, authOptions);
+      const posts = await Post.find().sort({ createdAt: -1 }).lean();
+
+      const safePosts = posts.map((post) => {
+        const isOwner = session ? post.userEmail === session.user.email : false;
+
+        const { userEmail, ...cleanPost } = post;
+        return {
+          ...cleanPost,
+          isOwner: isOwner,
+        };
+      });
       return response.status(200).json(posts);
     } catch (error) {
       return response.status(500).json({ error: "Failed to fetch posts" });
