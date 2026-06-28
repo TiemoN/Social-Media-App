@@ -97,7 +97,7 @@ export default function Home() {
         audioRef.current.pause();
       }
     };
-  }, []);
+  }, [volume]);
 
   useEffect(() => {
     let localId = localStorage.getItem("anonymous_user_id");

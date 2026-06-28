@@ -1,4 +1,4 @@
-import styled, { keyframes } from "styled-components";
+import styled, {keyframes} from "styled-components";
 
 const floatLeftToRight = keyframes`
   0% { transform: translateX(-100%); }
