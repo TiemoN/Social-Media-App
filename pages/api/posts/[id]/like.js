@@ -5,7 +5,7 @@ export default async function handler(request, response) {
   await dbConnect();
   const { id } = request.query;
 
- if (request.method === "PATCH") {
+  if (request.method === "PATCH") {
     try {
       const { userId } = request.body;
 
@@ -20,19 +20,18 @@ export default async function handler(request, response) {
 
       const hasLiked = post.likes.includes(userId);
 
-      const updateQuery = hasLiked
-        ? { $pull: { likes: userId } }
-        : { $addToSet: { likes: userId } };
+      if (hasLiked) {
+        post.likes = post.likes.filter((uid) => uid !== userId);
+      } else {
+        post.likes.push(userId);
+      }
 
-      const updatedPost = await Post.findByIdAndUpdate(id, updateQuery, {
-        new: true,
-        timestamps: false,
-      });
-
-      return response.status(200).json(updatedPost);
+      await post.save({ timestamps: false });
+      return response.status(200).json(post);
     } catch (error) {
       return response.status(500).json({ error: "Failed to toggle like." });
     }
   }
+
   return response.status(405).json({ message: "Method not allowed" });
 }
