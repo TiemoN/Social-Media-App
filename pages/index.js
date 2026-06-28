@@ -42,6 +42,11 @@ import {
   AudioControlBar,
   PlayAudioButton,
   VolumeSlider,
+  CloudCanvasWrapper,
+  FloatingCloudNode,
+  ModalOverlay,
+  ModalCard,
+  ModalActions,
 } from "../components/FeedElements";
 
 const fetcher = (url) =>
@@ -66,6 +71,7 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [deleteErrorId, setDeleteErrorId] = useState(null);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
 
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
@@ -110,9 +116,9 @@ export default function Home() {
       setIsPlaying(false);
     } else {
       audioRef.current
-  .play()
-  .then(() => setIsPlaying(true))
-  .catch((err) => console.error("Playback blocked:", err));
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => console.error("Playback blocked:", err));
     }
   };
 
@@ -237,31 +243,45 @@ export default function Home() {
     }
   }
 
-  async function handleDelete(id) {
-    setDeleteErrorId(null);
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this post permanently?"
-    );
-    if (!confirmDelete) return;
-
+  async function handleDeleteConfirm() {
+    if (!deleteTargetId) return;
     try {
-      const response = await fetch(`/api/posts/${id}`, {
+      const response = await fetch(`/api/posts/${deleteTargetId}`, {
         method: "DELETE",
       });
-
-      if (!response.ok) {
-        throw new Error("Deletion failed on the backend.");
-      }
+      if (!response.ok) throw new Error("Failed to delete post");
 
       mutate();
+      setDeleteTargetId(null);
     } catch (err) {
-      console.error("Deletion error captured:", err);
-      setDeleteErrorId(id);
+      console.error(err);
     }
   }
+
   return (
     <AppContainer>
+      <CloudCanvasWrapper>
+        <FloatingCloudNode
+          $bottom="20px"
+          $duration="65s"
+          $opacity="0.4"
+          $delay="-20s"
+        />
+
+        <FloatingCloudNode
+          $bottom="-10px"
+          $duration="45s"
+          $opacity="0.8"
+          $delay="0s"
+        />
+
+        <FloatingCloudNode
+          $bottom="-30px"
+          $duration="30s"
+          $opacity="0.95"
+          $delay="-15s"
+        />
+      </CloudCanvasWrapper>
       <NavBar>
         {status === "authenticated" ? (
           <>
@@ -298,8 +318,10 @@ export default function Home() {
         />
       </AudioControlBar>
       <Header>
-        <Title>Social Media App</Title>
-        <Subtitle>Insert inspirational quote</Subtitle>
+        <Title>CloudPulse</Title>
+        <Subtitle>
+          Share your thoughts. Post your world. Feel the pulse.
+        </Subtitle>
       </Header>
       {status === "authenticated" ? (
         <CreatePostBox>
@@ -432,16 +454,17 @@ export default function Home() {
                                 setEditError("");
                               }}
                             >
-                              Edit
+                              ✏️
                             </TextLink>
                           )}
 
                           {isPostOwner && (
                             <TextLink
                               $danger
-                              onClick={() => handleDelete(post._id)}
+                              onClick={() => setDeleteTargetId(post._id)}
+                              aria-label="Delete post"
                             >
-                              Delete
+                              ❌
                             </TextLink>
                           )}
                           <InteractionContainer>
@@ -470,6 +493,33 @@ export default function Home() {
           </>
         )}
       </FeedContainer>
+      {deleteTargetId && (
+        <ModalOverlay>
+          <ModalCard role="dialog" aria-modal="true">
+            <h3 style={{ margin: "0 0 10px 0", color: "#0f1419" }}>
+              Delete Post?
+            </h3>
+            <p
+              style={{
+                margin: "0 0 20px 0",
+                color: "#536471",
+                fontSize: "14px",
+              }}
+            >
+              This action cannot be undone. This post will be permanently
+              removed from CloudPulse.
+            </p>
+            <ModalActions>
+              <Button $secondary onClick={() => setDeleteTargetId(null)}>
+                Cancel
+              </Button>
+              <Button $danger onClick={handleDeleteConfirm}>
+                Delete
+              </Button>
+            </ModalActions>
+          </ModalCard>
+        </ModalOverlay>
+      )}
     </AppContainer>
   );
 }

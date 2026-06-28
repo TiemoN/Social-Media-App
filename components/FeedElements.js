@@ -1,51 +1,107 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
+
+const floatLeftToRight = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100vw); }
+`;
 
 export const AppContainer = styled.div`
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 24px;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
-  background-color: #ffffff;
+  width: 100%;
+  background: linear-gradient(180deg, #74c7ff 0%, #76c5f7 60%, #e0f2fe 100%);
+  background-attachment: fixed;
+  padding: 24px 16px;
+  position: relative;
+  overflow-x: hidden;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+`;
+
+export const CloudCanvasWrapper = styled.div`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 180px;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+`;
+
+export const FloatingCloudNode = styled.div`
+  position: absolute;
+  background-image: url("/cloud-pattern.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 600px;
+  height: 120px;
+  bottom: ${(props) => props.$bottom || "0px"};
+  opacity: ${(props) => props.$opacity || "0.9"};
+
+  animation: ${floatLeftToRight} ${(props) => props.$duration || "40s"} linear
+    infinite;
+  animation-delay: ${(props) => props.$delay || "0s"};
 `;
 
 export const Header = styled.header`
-  margin-bottom: 24px;
-`;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 
+  margin-top: 16px;
+  margin-bottom: 24px;
+  box-sizing: border-box;
+`;
 export const Title = styled.h1`
-  color: #1d9bf0;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 800;
-  margin: 0;
+  color: #004891;
+  margin: 0 0 6px 0;
+
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 `;
 
 export const Subtitle = styled.p`
-  color: #536471;
-  font-size: 14px;
-  margin: 4px 0 0 0;
+  font-size: 15px;
+  color: #000000;
+  margin: 0;
 `;
 
 export const CreatePostBox = styled.div`
-  border: 1px solid #eff3f4;
+  background-color: rgba(255, 255, 255, 0.96);
   border-radius: 16px;
   padding: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   margin-bottom: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+
+  width: 100%;
+  max-width: 600px;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  box-sizing: border-box;
 `;
 
 export const TextArea = styled.textarea`
   width: 100%;
-  border: none;
+  border: 1px solid #eff3f4;
+  border-radius: 12px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 16px;
   resize: none;
-  font-size: 18px;
-  outline: none;
-  margin-bottom: 12px;
+  background-color: #ffffff;
   color: #0f1419;
+  outline: none;
 
-  &::placeholder {
-    color: #536471;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: #1d9bf0;
   }
 `;
 
@@ -80,18 +136,28 @@ export const Button = styled.button`
 export const FeedContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  margin-top: 16px;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+
+  position: relative;
+  z-index: 10;
+  padding-bottom: 160px;
 `;
 
 export const PostCard = styled.div`
-  border: 1px solid #eff3f4;
+  background-color: rgba(255, 255, 255, 0.96);
   border-radius: 16px;
   padding: 16px;
-  background-color: #ffffff;
-  transition: background-color 0.2s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: transform 0.2s ease;
 
   &:hover {
-    background-color: #f7f9f9;
+    transform: translateY(-2px);
   }
 `;
 
@@ -137,14 +203,21 @@ export const ButtonGroup = styled.div`
 export const TextLink = styled.button`
   background: none;
   border: none;
-  padding: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: ${(props) => (props.$danger ? "#f4212e" : "#1d9bf0")};
+  padding: 4px 8px;
   cursor: pointer;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition:
+    background-color 0.2s,
+    opacity 0.2s;
 
   &:hover {
-    text-decoration: underline;
+    background-color: ${(props) =>
+      props.$danger ? "rgba(244, 33, 46, 0.1)" : "rgba(29, 155, 240, 0.1)"};
+    opacity: 0.8;
   }
 `;
 
@@ -252,7 +325,7 @@ export const UploadWrapper = styled.div`
 
 export const GuestNotice = styled.p`
   text-align: center;
-  color: #536471;
+  color: #000000;
   margin: 24px 0;
   font-size: 14px;
 `;
@@ -313,6 +386,12 @@ export const AudioControlBar = styled.div`
   padding: 8px 16px;
   border-radius: 9999px;
   margin-bottom: 16px;
+  width: max-content;
+
+  margin-left: auto;
+  margin-right: 0;
+
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 `;
 
 export const PlayAudioButton = styled(Button)`
@@ -324,4 +403,35 @@ export const VolumeSlider = styled.input`
   cursor: pointer;
   accent-color: #1d9bf0;
   width: 80px;
+`;
+
+export const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  backdrop-filter: blur(4px);
+`;
+
+export const ModalCard = styled.div`
+  background-color: #ffffff;
+  padding: 24px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  text-align: center;
+`;
+
+export const ModalActions = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
 `;
