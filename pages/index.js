@@ -158,8 +158,7 @@ export default function Home() {
     let imageUrl = "";
 
     try {
-      console.log("Cloud Name:", process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME);
-console.log("Preset:", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+      
       if (imageFile) {
         const formData = new FormData();
         formData.append("file", imageFile);
