@@ -310,7 +310,8 @@ export const PreviewText = styled.span`
 
 export const PostImage = styled.img`
   width: 100%;
-  max-height: 300px;
+  height: auto;
+  max-height: 400px;
   object-fit: cover;
   border-radius: 12px;
   margin-top: 8px;
