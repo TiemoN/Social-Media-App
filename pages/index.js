@@ -178,7 +178,11 @@ export default function Home() {
           }
         );
 
-        if (!response.ok) throw new Error("Server error");
+        if (!res.ok) {
+  const errorData = await res.json();
+  console.error("👉 CLOUDINARY ERROR DETAILS:", errorData);
+  throw new Error("Cloudinary media upload failed.");
+}
 
         const data = await res.json();
         imageUrl = data.secure_url;
