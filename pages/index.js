@@ -177,14 +177,14 @@ export default function Home() {
             body: formData,
           }
         );
-
+const data = await res.json();
         if (!res.ok) {
   const errorData = await res.json();
   console.error("CLOUDINARY ERROR DETAILS:", errorData);
   throw new Error("Cloudinary media upload failed.");
 }
 
-        const data = await res.json();
+        
         imageUrl = data.secure_url;
       }
 
