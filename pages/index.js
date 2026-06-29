@@ -179,8 +179,8 @@ export default function Home() {
         );
 const data = await res.json();
         if (!res.ok) {
-  const errorData = await res.json();
-  console.error("CLOUDINARY ERROR DETAILS:", errorData);
+  
+  console.error("CLOUDINARY ERROR DETAILS:", data);
   throw new Error("Cloudinary media upload failed.");
 }
 
