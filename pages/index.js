@@ -63,7 +63,8 @@ export default function Home() {
     error,
     isLoading,
     mutate,
-  } = useSWR("/api/posts", fetcher);
+  } = useSWR("/api/posts", fetcher,{ 
+  refreshInterval: 3000});
 
   const [inputText, setInputText] = useState("");
   const [submitError, setSubmitError] = useState("");
