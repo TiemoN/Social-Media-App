@@ -165,7 +165,7 @@ export default function Home() {
           "upload_preset",
           process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
         );
-        formData.append("transformation", "q_auto,f_auto,w_1000");
+        formData.append("eager", "w_1000,c_limit,q_auto,f_auto");
 
         const cloudinaryCloudName =
           process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
